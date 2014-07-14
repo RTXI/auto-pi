@@ -71,7 +71,7 @@ static size_t num_vars = sizeof(vars)/sizeof(DefaultGUIModel::variable_t);
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // constructor 
 // provides default values for paramters, calls update(INIT)
-AutoPi::AutoPi(void) : DefaultGUIModel("AutoPi",::vars,::num_vars)
+AutoPi::AutoPi(void) : DefaultGUIModel("Auto PI",::vars,::num_vars)
 { createGUI(vars, num_vars);
   kp=2e-10;
   ti=1e-8;

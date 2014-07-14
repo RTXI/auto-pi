@@ -1,5 +1,4 @@
-
-PLUGIN_NAME = auto_pi
+PLUGIN_NAME = auto-pi
 
 HEADERS = auto-pi.h
 
