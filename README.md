@@ -5,7 +5,9 @@
 
 ![Auto PI GUI](auto-pi.png)
 
+<!--start-->
 This module controls the Intespike interval (ISI) of a neuron using a Proportional Integral controller. The model automatically tunes the PI controller parameters to the neuron. The goal of the PI controller is to make small changes in current at each action potential onset to maintain the neuron at a target firing rate. This spike rate controller is designed to offset drift in the firing rate on the order of 10s of seconds to minutes. This module requires input from the “Spike Detector” module.
+<!--end-->
 
 ####Input Channels
 
