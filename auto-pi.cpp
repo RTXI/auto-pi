@@ -25,7 +25,7 @@ Changelog:
 #include <math.h>
 #include <stdio.h>
 #include <auto-pi.h>
-
+#include <QtGui>
 
 extern "C" Plugin::Object *createRTXIPlugin(void) {
     return new AutoPi();
@@ -100,8 +100,9 @@ AutoPi::AutoPi(void) : DefaultGUIModel("Auto PI",::vars,::num_vars)
   OldConstantCurrent=0;
   HoldOn=0;
 
-    update(INIT);
-    refresh();
+  update(INIT);
+  QTimer::singleShot(0, this, SLOT(resizeMe()));
+  refresh();
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 }
  
@@ -421,5 +422,3 @@ void AutoPi::update(DefaultGUIModel::update_flags_t flag)
   //printf("dT=%f\n",dt);
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 }
-       
-
