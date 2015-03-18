@@ -1,9 +1,9 @@
-PLUGIN_NAME = auto-pi
+PLUGIN_NAME = Auto_PI
 
-HEADERS = auto-pi.h
+HEADERS = AUTO_PI.h
 
-SOURCES = auto-pi.cpp\
-	moc_auto-pi.cpp
+SOURCES = AUTO_PI.cpp\
+	moc_AUTO_PI.cpp
 
 LIBS = 
 
