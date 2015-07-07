@@ -24,7 +24,7 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <auto-pi.h>
+#include "auto-pi.h"
 
 extern "C" Plugin::Object *createRTXIPlugin(void) {
 	return new AutoPi();
@@ -47,8 +47,8 @@ static DefaultGUIModel::variable_t vars[] = {
 	{"Target Ts","Target Inter Spike Interval (sec)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
 	{"ConstantCurrent","Constant Current (pA)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
 	{"Increase","% of current increase per step",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"Autotune","Autotune?",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"Hold","Hold",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
+	{"Autotune","Autotune?",DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER,},
+	{"Hold","Hold",DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER,},
 
 	//STATES
 	{"P","Scalar",DefaultGUIModel::STATE,},
@@ -141,10 +141,7 @@ void AutoPi::execute(void)
 			}
 			// printf("Current=%f\n",CurrentState*1e12);
 			// ConstantCurrent = dI;//Ramp up constant current if cell is not spiking;
-			if(ConstantCurrent <= 0)
-			{
-				ConstantCurrent = dI;
-			}
+			if(ConstantCurrent <= 0) ConstantCurrent = dI;
 			else
 			{
 				ConstantCurrent *= exp(.69*dt/4);
@@ -172,13 +169,13 @@ void AutoPi::execute(void)
 
 	case (1):
 		if(state == 1){
-			if (counter<20){
-			Last_t_spike = Current_t_spike;
-			Current_t_spike = t;
-			t_spike = Current_t_spike - Last_t_spike;  
-			ISIs[counter]=t_spike;
-			counter=counter+1;
-			if (counter==20) stage =2;
+			if (counter<20) {
+				Last_t_spike = Current_t_spike;
+				Current_t_spike = t;
+				t_spike = Current_t_spike - Last_t_spike;  
+				ISIs[counter]=t_spike;
+				counter=counter+1;
+				if (counter==20) stage =2;
 			}
 		}
 		break;
@@ -192,7 +189,7 @@ void AutoPi::execute(void)
 		}
 		mean_ISI=mean_ISI/10.0;
 		counter=0;
-		if (mean_ISI>target)  stage=3;
+		if (mean_ISI>target) stage=3;
 		else stage=4;
 		break;
 
@@ -215,7 +212,7 @@ void AutoPi::execute(void)
 		tau=(min_ISI+1)/5;
 		if (tau<1.22) tau=1.22;
 		a=1-1/tau;
-		/*
+	/*
 		printf("Current=%f\n",CurrentState);
 		printf("mean_ISI=%f\n",mean_ISI);
 		printf("last_ISI=%f\n",last_ISI);
@@ -241,7 +238,7 @@ void AutoPi::execute(void)
 		printf("ISIs=%f\n",ISIs[17]);
 		printf("ISIs=%f\n",ISIs[18]);
 		printf("ISIs=%f\n",ISIs[19]);
-		*/
+	*/
 		kp=-(1/K)*(201*a-1-20*sqrt(101*a*a-a));
 		ti=100*kp;
 		setParameter("Kp",kp);
@@ -288,11 +285,10 @@ void AutoPi::execute(void)
 			{
 				if (t_spike<target)
 				{
-				 CurrentState=CurrentState/1.1;
-				 ConstantCurrent=CurrentState;
-				 first=1;
-				//%  setParameter("ConstantCurrent",(CurrentState)*1e12);
-
+					CurrentState=CurrentState/1.1;
+					ConstantCurrent=CurrentState;
+					first=1;
+					//%  setParameter("ConstantCurrent",(CurrentState)*1e12);
 				}
 			}
 		}
@@ -321,15 +317,12 @@ void AutoPi::execute(void)
 		}
 		*/
 		break;
-
 	}
-	output(1)=target;  
-	if(CurrentState>4e-9)
-	{
-		CurrentState=4e-9;
-	}
+	
+	if(CurrentState>4e-9) CurrentState=4e-9;
 	output(0)=CurrentState;
-	output(2)= t_spike;
+	output(1)=target;  
+	output(2)=t_spike;
 }
 
 
@@ -360,18 +353,12 @@ void AutoPi::update(DefaultGUIModel::update_flags_t flag)
 		HoldOn = getParameter("Hold").toDouble();
 		OldConstantCurrent=ConstantCurrent;
 		ConstantCurrent = getParameter("ConstantCurrent").toDouble()*1e-12;// if (flag!=PAUSE) ConstantCurrent=CurrentState;//just this added avoid return to constant current when you change ISI
-		if (OldConstantCurrent!=ConstantCurrent)
-		{  
-			CurrentState=ConstantCurrent;   
-		}
-
-		else
-		{
-			ConstantCurrent=CurrentState;
-		}  
+		if (OldConstantCurrent!=ConstantCurrent) CurrentState=ConstantCurrent;   
+		else ConstantCurrent=CurrentState;
 		//OldConstantCurrent=ConstantCurrent;
 		increase = getParameter("Increase").toDouble();
-		autotune = getParameter("Autotune").toInt();if (autotune==1) first=1;
+		autotune = getParameter("Autotune").toInt();
+		if (autotune==1) first=1;
 		P=0;
 		I=0;
 		D=0;
@@ -409,7 +396,8 @@ void AutoPi::update(DefaultGUIModel::update_flags_t flag)
 	default:
 		break;
 	}
-//printf("Target ISI = %f\n",target);
-dt = RT::System::getInstance()->getPeriod()*1e-9;
-//printf("dT=%f\n",dt);
+
+	//printf("Target ISI = %f\n",target);
+	dt = RT::System::getInstance()->getPeriod()*1e-9;
+	//printf("dT=%f\n",dt);
 }
