@@ -21,15 +21,21 @@ This module controls the Intespike interval (ISI) of a neuron using a Proportion
 
 ####Parameters
 
-1. Threshold (mV) : threshold crossing at which to detect a spike
-2. Min Interval (ms) : minimum interval (refractory period) that must pass before another spike is detected
-3. Kp : Proportional Gain
-4. Ti : Integral Time
-5. Td : Derivative Time
-6. Target Ts (s): Target Inter Spike Interval
-7. Constant (pA): Current, Constant Current
-8. Increase : % of current increase per step
-9. Autotune
+1. Kp : Proportional Gain
+2. Ti : Integral Time
+3. Td : Derivative Time
+4. Target Ts (s): Target Inter Spike Interval
+5. Constant (pA): Current, Constant Current
+6. Increase : % of current increase per step
+7. Autotune : (?)
+8. Hold: Hold
+
+####States
+
+1. P : Scalar
+2. I : Scalar
+3. D : Scalar
+4. CurrentState : (pA)
 
 The module automatically calculates a first order model for the ISI as a function of the applied current. Given the first order model, it solves the coefficients for the critically damped solution of the proportional-integral controller with the constraint that the proportional coefficient is 1/100 of the Integral coefficient, to assure small changes with each spike.  
 
