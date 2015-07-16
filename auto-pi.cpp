@@ -31,30 +31,29 @@ extern "C" Plugin::Object *createRTXIPlugin(void) {
 }
 
 static DefaultGUIModel::variable_t vars[] = {
-
 	//INPUTS
-	{"State","Spike State Variable (0 - 4)",DefaultGUIModel::INPUT,},
+	{"State","Spike state variable (0 - 4)",DefaultGUIModel::INPUT,},
 
 	//OUTPUTS
-	{"Iout (A)","Current Output (A)",DefaultGUIModel::OUTPUT,},  
+	{"Iout (A)","Current output (A)",DefaultGUIModel::OUTPUT,},  
 	{"Target ISI (s)","Target Inter-spike interval (s)",DefaultGUIModel::OUTPUT,},
 	{"ISI (s)","Inter-spike interval (s)",DefaultGUIModel::OUTPUT,},
 
 	//PARAMETERS
 	{"Kp","Proportional Gain",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},   
-	{"Ti","Integral Time",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"Td","Derivitive Time",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"Target Ts","Target Inter Spike Interval (sec)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"ConstantCurrent","Constant Current (pA)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"Increase","% of current increase per step",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
-	{"Autotune","Autotune?",DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER,},
+	{"Ti","Integral time (Gain/Ti)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
+	{"Td","Derivitive time (Gain*Td)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
+	{"Target ISI","Target inter-spike interval (s)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
+	{"ConstantCurrent","Constant current (pA)",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
+	{"Increase (%)","% Current increase per step",DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE,},
+	{"Autotune","Autotune? (1=yes)",DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER,},
 	{"Hold","Hold",DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER,},
 
 	//STATES
-	{"P","Scalar",DefaultGUIModel::STATE,},
-	{"I","Scalar",DefaultGUIModel::STATE,},
-	{"D","Scalar",DefaultGUIModel::STATE,}, 
-	{"CurrentState","pA",DefaultGUIModel::STATE,}, 
+	{"P","Proportional component (A)",DefaultGUIModel::STATE,},
+	{"I","Integrative component (A)",DefaultGUIModel::STATE,},
+	{"D","Derivative component (A)",DefaultGUIModel::STATE,}, 
+	{"CurrentState","Current output (A)",DefaultGUIModel::STATE,}, 
 };
 
 // some necessary variable
@@ -159,7 +158,7 @@ void AutoPi::execute(void)
 			e = t_spike - target;
 			P = kp*e;
 			I = I +(ti*e*t_spike);
-			D = (td/t_spike)*(P-pe)/kp; //OM, Jul 20, 2009
+			D = (td/t_spike)*(P-pe)/kp; //OM, Jul 20, 2009 -Oscar; accurate for small td -Ansel;
 			pe = P;//OM, Jul 20, 2009
 			Last_t_spike = Current_t_spike;
 			// printf("error=%f, P=%f, I=%f, D=%f, ThisSpike=%f, LastSpike=%f\n",e,P,I,D,t_spike,Last_t_spike);
@@ -240,7 +239,7 @@ void AutoPi::execute(void)
 		printf("ISIs=%f\n",ISIs[19]);
 	*/
 		kp=-(1/K)*(201*a-1-20*sqrt(101*a*a-a));
-		ti=100*kp;
+		ti=100*kp; // 100*kp is arbitrary. see paper listed in README
 		setParameter("Kp",kp);
 		setParameter("Ti",ti);
 		stage=0;
