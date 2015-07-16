@@ -27,7 +27,6 @@
 
 class AutoPi : public DefaultGUIModel
 {
-
 	public:
 		AutoPi(void);
 		virtual ~AutoPi(void);
