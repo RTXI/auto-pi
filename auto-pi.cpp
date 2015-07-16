@@ -333,7 +333,7 @@ void AutoPi::update(DefaultGUIModel::update_flags_t flag)
 		setParameter("Kp",kp);
 		setParameter("Ti",ti);
 		setParameter("Td",td);
-		setParameter("Target Ts",target);
+		setParameter("Target ISI",target);
 		setParameter("ConstantCurrent",ConstantCurrent*1e12);
 		setParameter("Increase",increase);
 		setParameter("Autotune",autotune);
@@ -348,7 +348,7 @@ void AutoPi::update(DefaultGUIModel::update_flags_t flag)
 		kp = getParameter("Kp").toDouble(); 
 		ti = getParameter("Ti").toDouble();
 		td = getParameter("Td").toDouble();
-		target = getParameter("Target Ts").toDouble();
+		target = getParameter("Target ISI").toDouble();
 		HoldOn = getParameter("Hold").toDouble();
 		OldConstantCurrent=ConstantCurrent;
 		ConstantCurrent = getParameter("ConstantCurrent").toDouble()*1e-12;// if (flag!=PAUSE) ConstantCurrent=CurrentState;//just this added avoid return to constant current when you change ISI

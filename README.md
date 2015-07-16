@@ -28,17 +28,18 @@ Once a cell is patched, the spikes are detected with the spike detector module. 
 ####Parameters
 
 1. Kp : Proportional gain
-2. Ti (s) : Integral time
-3. Td (s) : Derivative time
-4. Target Ts (s): Target interspike interval
-5. Constant (pA): Current, constant current
+2. Ti : Integral time (Gain/Ti)
+3. Td : Derivative time (Gain\*Td)
+4. Target ISI: Target interspike interval (s)
+5. Constant: Current, constant current (pA)
 6. Increase : % of Current Increase per Step
 7. Autotune : (1=yes)
 8. Hold: Hold
 
 ####States
 
-1. P : Proportional componenet
-2. I : Integrative component
-3. D : Derivative component
+1. P : Proportional componenet (A)
+2. I : Integrative component (A)
+3. D : Derivative component (A)
 4. CurrentState : Current applied to the neuron (A)
+
