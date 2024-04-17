@@ -11,7 +11,7 @@ auto_pi::Panel::Panel(QMainWindow* main_window, Event::Manager* ev_manager)
     : Widgets::Panel(std::string(auto_pi::MODULE_NAME), main_window, ev_manager)
 {
   setWhatsThis("Automatic Interspike Interval Generator");
-  createGUI(auto_pi::get_default_vars(), {});  // this is required to create the GUI
+  createGUI(auto_pi::get_default_vars(), {P, I, D, CURRENT_STATE});  // this is required to create the GUI
   resizeMe();
   refresh();
 }
@@ -21,12 +21,21 @@ auto_pi::Component::Component(Widgets::Plugin* hplugin)
                          std::string(auto_pi::MODULE_NAME),
                          auto_pi::get_default_channels(),
                          auto_pi::get_default_vars())
+    , kp(2e-10)
+    , ti(1e-8)
+    , td(0.0)
+    , target(0.1)
+    , ConstantCurrent(50e-12)
+    , increase(20.0)
+    , autotune(0)
+    , HoldOn(0)
+    , dt(static_cast<double>(RT::OS::getPeriod()) * 1e-9)
 {
 }
 
 void auto_pi::Component::execute()
 {
-  dt = RT::OS::getPeriod() * 1e-9;
+  dt = static_cast<double>(RT::OS::getPeriod()) * 1e-9;
   // This is the real-time function that will be called
   switch (this->getState()) {
     case RT::State::EXEC:
@@ -69,9 +78,6 @@ void auto_pi::Component::execute()
               D = 0;
               return;
             }
-            // printf("Current=%f\n",CurrentState*1e12);
-            // ConstantCurrent = dI;//Ramp up constant current if cell is not
-            // spiking;
             if (ConstantCurrent <= 0) {
               ConstantCurrent = dI;
             } else {
@@ -97,8 +103,6 @@ void auto_pi::Component::execute()
                 / kp;  // OM, Jul 20, 2009 -Oscar; accurate for small td -Ansel;
             pe = P;  // OM, Jul 20, 2009
             Last_t_spike = Current_t_spike;
-            // printf("error=%f, P=%f, I=%f, D=%f, ThisSpike=%f,
-            // LastSpike=%f\n",e,P,I,D,t_spike,Last_t_spike);
           }
           CurrentState = ConstantCurrent + P + I + D;
           break;
@@ -156,33 +160,6 @@ void auto_pi::Component::execute()
             tau = 1.22;
           }
           a = 1 - 1 / tau;
-          /*
-                  printf("Current=%f\n",CurrentState);
-                  printf("mean_ISI=%f\n",mean_ISI);
-                  printf("last_ISI=%f\n",last_ISI);
-                  printf("increase=%f\n",increase);
-                  printf("tau=%f\n",tau);
-                  printf("ISIs=%f\n",ISIs[0]);
-                  printf("ISIs=%f\n",ISIs[1]);
-                  printf("ISIs=%f\n",ISIs[2]);
-                  printf("ISIs=%f\n",ISIs[3]);
-                  printf("ISIs=%f\n",ISIs[4]);
-                  printf("ISIs=%f\n",ISIs[5]);
-                  printf("ISIs=%f\n",ISIs[6]);
-                  printf("ISIs=%f\n",ISIs[7]);
-                  printf("ISIs=%f\n",ISIs[8]);
-                  printf("ISIs=%f\n",ISIs[9]);
-                  printf("ISIs=%f\n",ISIs[10]);
-                  printf("ISIs=%f\n",ISIs[11]);
-                  printf("ISIs=%f\n",ISIs[12]);
-                  printf("ISIs=%f\n",ISIs[13]);
-                  printf("ISIs=%f\n",ISIs[14]);
-                  printf("ISIs=%f\n",ISIs[15]);
-                  printf("ISIs=%f\n",ISIs[16]);
-                  printf("ISIs=%f\n",ISIs[17]);
-                  printf("ISIs=%f\n",ISIs[18]);
-                  printf("ISIs=%f\n",ISIs[19]);
-          */
           kp = -(1 / K) * (201 * a - 1 - 20 * sqrt(101 * a * a - a));
           ti = 100 * kp;  // 100*kp is arbitrary. see paper listed in README
           setValue(KP, kp);
@@ -197,8 +174,6 @@ void auto_pi::Component::execute()
             first = 1;
             autotune = 1;
             increase = 1.5 * increase;
-            //% setParameter("ConstantCurrent",(CurrentState)*1e12);
-            //% setParameter("Increase",increase);
           }
           break;
 
@@ -206,14 +181,11 @@ void auto_pi::Component::execute()
           if (CurrentState <= 0) {
             CurrentState = 1e-12;
           }
-          // printf("Entering Stage 5");
-          // printf("Stage=%i\n",stage);
           if (state == 1) {
             Last_t_spike = Current_t_spike;
             Current_t_spike = t;
             t_spike = Current_t_spike - Last_t_spike;
           }
-          // printf("t=%f tt=%f\n",t,tt);
           if (t > 3 * target + tt)  // The neuron hasn't fired in a long time,
                                     // let's ramp up the current until it does.
           {
@@ -225,40 +197,14 @@ void auto_pi::Component::execute()
               CurrentState = CurrentState * 1.1;
               ConstantCurrent = CurrentState;
               first = 1;
-              //%setParameter("ConstantCurrent",(CurrentState)*1e12);
             } else {
               if (t_spike < target) {
                 CurrentState = CurrentState / 1.1;
                 ConstantCurrent = CurrentState;
                 first = 1;
-                //%  setParameter("ConstantCurrent",(CurrentState)*1e12);
               }
             }
           }
-          /*
-          else
-          {
-                  if (t > Last_t_spike + 3*target)
-                  {
-                          CurrentState=CurrentState*(1+increase/100);
-                  }
-          }
-
-
-          //CurrentState=CurrentState*(1+increase/100);
-
-          if(CurrentState>1e-8) CurrentState=1e-8;
-          printf("Here");
-          //CurrentState=ConstantCurrent+P+I+D;
-          }
-          //      return;
-
-          else
-          {
-          //	stage=1;
-          stage=5;
-          }
-          */
           break;
       }
 
@@ -298,7 +244,6 @@ void auto_pi::Component::execute()
       } else {
         ConstantCurrent = CurrentState;
       }
-      // OldConstantCurrent=ConstantCurrent;
       increase = getValue<double>(PARAMETER::INCREASE_PERCENT);
       autotune = getValue<int64_t>(PARAMETER::AUTOTUNE);
       if (autotune == 1) {
@@ -313,10 +258,10 @@ void auto_pi::Component::execute()
       Current_t_spike = 0;
       break;
     case RT::State::PERIOD:
+      setState(RT::State::EXEC);
       break;
     case RT::State::PAUSE:
       writeoutput(0 , 0);
-      //setParameter("ConstantCurrent", (ConstantCurrent + P + I + D) * 1e12);
       setValue(PARAMETER::CONSTANT_CURRENT, (CurrentState) * 1e12);
       ConstantCurrent = CurrentState;
       P = 0;

@@ -146,32 +146,32 @@ private:
   double kp;
   double ti;
   double td;
-  double e;  // e is the error
-  double pe;  // pe is the previous error
+  double e = 0;  // e is the error
+  double pe = 0;  // pe is the previous error
   double target;
-  double P;
-  double I;
-  double D;
+  double P = 0;
+  double I = 0;
+  double D = 0;
   double dt;
-  double t;
-  double tt;  // time threshold
-  double CurrentState;
-  double Last_t_spike;
-  double Current_t_spike;
-  double OldConstantCurrent;
+  double t = 0;
+  double tt = 0;  // time threshold
+  double CurrentState = 0;
+  double Last_t_spike = 0;
+  double Current_t_spike = 0;
+  double OldConstantCurrent = 0;
   double ConstantCurrent;
   double t_spike;
   double dI;
   double increase;  // porcentage to increase (default 20%)
   std::array<double, 20> ISIs;
-  double mean_ISI;
-  double last_ISI;
-  double min_ISI;
-  double delta_y;
-  double delta_x;
-  double K;
-  double tau;
-  double a;
+  double mean_ISI = 0.0;
+  double last_ISI = 0.0;
+  double min_ISI = 0.0;
+  double delta_y = 0.0;
+  double delta_x = 0.0;
+  double K = 0;
+  double tau = 0;
+  double a = 0;
   int64_t count;
   int state;
   int counter;
