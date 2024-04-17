@@ -1,4 +1,4 @@
-###Auto PI
+### Auto PI
 
 **Requirements:** Spike Detector  
 **Limitations:** None  
@@ -15,17 +15,17 @@ Once a cell is patched, the spikes are detected with the spike detector module. 
 **Reference:** Miranda-Domínguez O, Gonia J, Netoff TI. Firing rate control of a neuron using a linear proportional-integral controller. J Neural Eng. 2010 Dec;7(6):066004.
 <!--end-->
 
-####Input Channels
+#### Input Channels
 
 1. input(0) – State : Spike Detector output
 
-####Output Channels
+#### Output Channels
 
 1. output(0) – Iout : Current to be applied to the neuron. Connect this output to the neuron. (A)
 2. output(1) – Target ISI : desired ISI (s)
 3. output(2) – ISI : actual ISI (s)
 
-####Parameters
+#### Parameters
 
 1. Kp : Proportional gain
 2. Ti : Integral time (Gain/Ti)
@@ -36,7 +36,7 @@ Once a cell is patched, the spikes are detected with the spike detector module. 
 7. Autotune : (1=yes)
 8. Hold: Hold
 
-####States
+#### States
 
 1. P : Proportional componenet (A)
 2. I : Integrative component (A)
